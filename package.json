@@ -1,6 +1,7 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "tatva-ops",
+  "version": "1.0.0",
+  "description": "Tatva Ops - Intelligent home services platform with AI-powered search and enquiry system",
   "private": true,
   "scripts": {
     "build": "next build",
