@@ -1,27 +1,43 @@
 @import "tailwindcss";
+/* Glass-morphed pill utility for header items */
+.glass-pill{
+  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.10));
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 9999px;
+  -webkit-backdrop-filter: saturate(1.2) blur(10px);
+  backdrop-filter: saturate(1.2) blur(10px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.24) inset, 0 8px 24px rgba(2,6,23,0.10);
+}
+
+/* Footer spacing variant to avoid borders touching */
+.glass-pill--footer{ margin: 0 10%; }
+
+@media (prefers-color-scheme: light){
+  .glass-pill{ background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.55)); border-color: rgba(0,0,0,0.06); box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 28px rgba(2,6,23,0.08); }
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.96 0.005 0);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(0.96 0.005 0);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(0.96 0.005 0);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.96 0.005 0);
-  --secondary: oklch(0.94 0.005 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(1 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.94 0.005 0);
+  --muted: oklch(1 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.94 0.005 0);
+  --accent: oklch(1 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.005 0);
-  --input: oklch(0.9 0.005 0);
+  --border: oklch(0.95 0.005 0);
+  --input: oklch(1 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -29,20 +45,20 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.96 0.005 0);
+  --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.96 0.005 0);
-  --sidebar-accent: oklch(0.94 0.005 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(1 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.9 0.005 0);
+  --sidebar-border: oklch(0.95 0.005 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* Custom colors for Tatva Ops brand */
+  /* Custom colors for Tatva Ops brand - White theme */
   --tatva-green: oklch(0.65 0.15 142);
   --tatva-green-hover: oklch(0.6 0.15 142);
-  --tatva-beige: oklch(0.95 0.02 85);
-  --tatva-warm-gray: oklch(0.85 0.01 85);
+  --tatva-beige: oklch(1 0 0);
+  --tatva-warm-gray: oklch(1 0 0);
   --tatva-charcoal: oklch(0.25 0.01 85);
   --tatva-orange: oklch(0.7 0.15 45);
   --tatva-orange-hover: oklch(0.65 0.15 45);
@@ -50,10 +66,10 @@
   --tatva-purple-hover: oklch(0.55 0.2 285);
   --tatva-blue: oklch(0.65 0.15 240);
   --tatva-gray: oklch(0.5 0.02 0);
-  --tatva-light-gray: oklch(0.85 0.01 0);
-  --tatva-search-bg: oklch(0.95 0.005 0);
-  --tatva-light-overlay: oklch(0 0 0 / 0.08);
-  --tatva-text-shadow: oklch(0 0 0 / 0.5);
+  --tatva-light-gray: oklch(1 0 0);
+  --tatva-search-bg: oklch(1 0 0);
+  --tatva-light-overlay: oklch(0 0 0 / 0.05);
+  --tatva-text-shadow: oklch(0 0 0 / 0.3);
   /* Adding yellow color for navigation hover effects */
   --tatva-yellow: oklch(0.8 0.15 85);
   --tatva-yellow-hover: oklch(0.75 0.15 85);
@@ -158,6 +174,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html, body {
+    overflow: auto;
+    height: 100%;
   }
   body {
     @apply bg-background text-foreground;

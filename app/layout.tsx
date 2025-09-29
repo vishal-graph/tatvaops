@@ -4,6 +4,7 @@ import { Raleway } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+import { ConditionalSidebar } from "@/components/conditional-sidebar"
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
   description:
     "Discover verified service partners, track milestones, and manage payments — all in one simple platform. From interiors to construction, Tatva Ops ensures safe, seamless project delivery.",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({
@@ -26,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${raleway.variable}`}>
+        <ConditionalSidebar />
         <Suspense fallback={null}>{children}</Suspense>
         <Analytics />
       </body>

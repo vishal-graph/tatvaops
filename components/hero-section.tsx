@@ -6,6 +6,8 @@ import { useState, useEffect } from "react"
 import { Search, CheckCircle, Shield, BarChart3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { flatItems, expandQueryTokens, scoreItem } from "@/lib/search-utils"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 const serviceCategories = [
@@ -30,6 +32,7 @@ export function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -47,6 +50,18 @@ export function HeroSection() {
       clearInterval(imageInterval)
     }
   }, [])
+
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (q.length < 3) { setSuggestions([]); return }
+    const qTokens = expandQueryTokens(q)
+    const matches = flatItems.map(item => ({ ...item, score: scoreItem(item as any, qTokens) }))
+      .filter(m => m.score > 0)
+      .sort((a,b)=>b.score-a.score)
+      .slice(0,3)
+      .map(m => m.label)
+    setSuggestions(matches)
+  }, [searchQuery])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,39 +137,32 @@ export function HeroSection() {
               Search
             </Button>
           </form>
+
+          {suggestions.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-sm border border-tatva-light-gray rounded-2xl shadow-xl p-3">
+              <div className="flex gap-2">
+                {suggestions.slice(0,3).map((s)=> (
+                  <button key={s} onClick={()=>router.push(`/search?q=${encodeURIComponent(s)}`)} className="px-3 py-2 rounded-full border text-sm hover:bg-tatva-charcoal/10">
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div
-          className={`flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 transition-all duration-1000 ${isVisible ? "animate-fade-in-up opacity-100" : "opacity-0"} animate-delay-600`}
-        >
-          <div
-            className="flex items-center gap-3 text-white/95"
-            style={{ textShadow: "1px 1px 2px var(--color-tatva-text-shadow)" }}
-          >
-            <div className="p-2 bg-tatva-purple/20 rounded-2xl">
-              <CheckCircle className="h-5 w-5 text-tatva-purple" />
-            </div>
-            <span className="font-medium">Verified Partners</span>
-          </div>
+        {/* trust badges removed per request */}
+      </div>
 
-          <div
-            className="flex items-center gap-3 text-white/95"
-            style={{ textShadow: "1px 1px 2px var(--color-tatva-text-shadow)" }}
-          >
-            <div className="p-2 bg-tatva-blue/20 rounded-2xl">
-              <Shield className="h-5 w-5 text-tatva-blue" />
-            </div>
-            <span className="font-medium">Secure Payments</span>
-          </div>
-
-          <div
-            className="flex items-center gap-3 text-white/95"
-            style={{ textShadow: "1px 1px 2px var(--color-tatva-text-shadow)" }}
-          >
-            <div className="p-2 bg-tatva-orange/20 rounded-2xl">
-              <BarChart3 className="h-5 w-5 text-tatva-orange" />
-            </div>
-            <span className="font-medium">Milestone Tracking</span>
+      {/* Footer glass pills - centered */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+        <div className="glass-pill px-4 py-2">
+          <div className="flex items-center gap-3 text-sm text-black">
+            <Link href="/privacy" className="hover:opacity-90 transition">Privacy &amp; Policy</Link>
+            <span className="opacity-40">•</span>
+            <Link href="/terms" className="hover:opacity-90 transition">Terms &amp; Conditions</Link>
+            <span className="opacity-40">•</span>
+            <Link href="/contact" className="hover:opacity-90 transition">Contact Us</Link>
           </div>
         </div>
       </div>
