@@ -141,9 +141,9 @@ export function SmartSearch({ query }: { query: string }){
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
-      <div className="mb-8">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="mb-4">
+        <div className="mb-3 flex items-center justify-between">
           <p className="text-tatva-gray text-sm">About {results.length} results for "{searchQuery}"</p>
           {correction && correction.corrected.toLowerCase() !== searchQuery.toLowerCase() && (
             <button className="text-sm text-blue-600 hover:underline" onClick={()=>setSearchQuery(correction.corrected)}>Did you mean {correction.corrected}?</button>
@@ -153,11 +153,11 @@ export function SmartSearch({ query }: { query: string }){
 
       {/* Search Results */}
       {grouped.length>0 && (
-        <h2 className="text-2xl font-bold text-tatva-charcoal mb-4">Search relevant services and vendors</h2>
+        <h2 className="text-xl font-bold text-tatva-charcoal mb-3">Search relevant services and vendors</h2>
       )}
       {grouped.map(group=> (
-        <div key={group.meta.category} className="mb-12">
-          <div className="flex items-center justify-between mb-6">
+        <div key={group.meta.category} className="mb-8">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-tatva-charcoal flex items-center gap-2"><span>{group.meta.emoji}</span>{group.meta.category} <span className="px-2 py-0.5 text-xs rounded-full border">AI</span></h2>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={()=>scrollContainer('left', `scroll-${group.meta.category}`)} className="p-2 border-tatva-light-gray hover:bg-tatva-charcoal/10 rounded-full"><ChevronLeft className="h-4 w-4" /></Button>
