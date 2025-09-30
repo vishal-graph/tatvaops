@@ -138,6 +138,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
         setIsLoadingQuestions(true)
         try {
           const questions = await generateDiagnosticQuestions(service.label, service.category)
+          console.log('🎯 Setting questions in UI:', questions)
           setDiagnosticQuestions(questions)
           setIsAiGenerated(true)
           
@@ -147,10 +148,12 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
             serviceSpecific[`question_${index}`] = ""
           })
           setFormData(prev => ({ ...prev, serviceSpecific }))
+          console.log('🎯 Questions set successfully, should re-render now')
         } catch (error) {
           console.error('Error loading questions:', error)
           // Fallback to static questions
           const fallbackQuestions = getFallbackQuestions(service.category)
+          console.log('🎯 Setting fallback questions:', fallbackQuestions)
           setDiagnosticQuestions(fallbackQuestions)
           setIsAiGenerated(false)
           
@@ -387,7 +390,9 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                       <span className="ml-3 text-gray-600">Generating personalized questions...</span>
                     </div>
                   ) : (
-                    diagnosticQuestions.map((question, index) => (
+                    (() => {
+                      console.log('🎯 Rendering questions:', diagnosticQuestions)
+                      return diagnosticQuestions.map((question, index) => (
                       <div key={index}>
                         <Label htmlFor={`question_${index}`}>
                           {question} *
@@ -402,6 +407,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                       />
                     </div>
                     ))
+                    })()
                   )}
                 </div>
               </div>
