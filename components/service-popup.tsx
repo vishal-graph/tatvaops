@@ -30,56 +30,35 @@ interface EnquiryForm {
   }
 }
 
-// AI-generated diagnostic questions using Long Cat AI
+// AI-generated diagnostic questions using our server-side API
 const generateDiagnosticQuestions = async (serviceLabel: string, category: string): Promise<string[]> => {
   try {
     console.log('🤖 Generating AI questions for:', serviceLabel, 'in category:', category)
     
-    const prompt = `Generate 5 specific diagnostic questions for a ${serviceLabel} service in the ${category} category. These questions should help gather initial information for a home service provider to understand the customer's needs. Make each question specific, actionable, and relevant to the service type. Return only the questions, one per line, without numbering.`
-    
-    console.log('📝 Prompt:', prompt)
-    
-    const response = await fetch('https://api.longcat.ai/v1/chat/completions', {
+    const response = await fetch('/api/generate-questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ak_1N40y00IF1aB0uI01H7Ab71U9a59W'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
+        serviceLabel,
+        category
       })
     })
 
     console.log('📡 API Response status:', response.status)
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('❌ API Error:', errorText)
-      throw new Error(`API request failed: ${response.status} - ${errorText}`)
+      const errorData = await response.json()
+      console.error('❌ API Error:', errorData)
+      throw new Error(`API request failed: ${response.status}`)
     }
 
     const data = await response.json()
     console.log('📊 API Response data:', data)
     
-    const questionsText = data.choices[0]?.message?.content || ''
-    console.log('📝 Raw questions text:', questionsText)
-    
-    // Split by newlines and clean up
-    const questions = questionsText
-      .split('\n')
-      .map(q => q.trim())
-      .filter(q => q.length > 0)
-      .slice(0, 5) // Ensure we only get 5 questions
-    
-    console.log('✅ Processed questions:', questions)
+    const questions = data.questions || []
+    console.log('✅ Generated questions:', questions)
     
     return questions.length > 0 ? questions : getFallbackQuestions(category)
   } catch (error) {
