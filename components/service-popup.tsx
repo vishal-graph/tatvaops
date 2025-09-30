@@ -33,7 +33,11 @@ interface EnquiryForm {
 // AI-generated diagnostic questions using Long Cat AI
 const generateDiagnosticQuestions = async (serviceLabel: string, category: string): Promise<string[]> => {
   try {
+    console.log('🤖 Generating AI questions for:', serviceLabel, 'in category:', category)
+    
     const prompt = `Generate 5 specific diagnostic questions for a ${serviceLabel} service in the ${category} category. These questions should help gather initial information for a home service provider to understand the customer's needs. Make each question specific, actionable, and relevant to the service type. Return only the questions, one per line, without numbering.`
+    
+    console.log('📝 Prompt:', prompt)
     
     const response = await fetch('https://api.longcat.ai/v1/chat/completions', {
       method: 'POST',
@@ -54,12 +58,19 @@ const generateDiagnosticQuestions = async (serviceLabel: string, category: strin
       })
     })
 
+    console.log('📡 API Response status:', response.status)
+
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`)
+      const errorText = await response.text()
+      console.error('❌ API Error:', errorText)
+      throw new Error(`API request failed: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('📊 API Response data:', data)
+    
     const questionsText = data.choices[0]?.message?.content || ''
+    console.log('📝 Raw questions text:', questionsText)
     
     // Split by newlines and clean up
     const questions = questionsText
@@ -68,9 +79,12 @@ const generateDiagnosticQuestions = async (serviceLabel: string, category: strin
       .filter(q => q.length > 0)
       .slice(0, 5) // Ensure we only get 5 questions
     
+    console.log('✅ Processed questions:', questions)
+    
     return questions.length > 0 ? questions : getFallbackQuestions(category)
   } catch (error) {
-    console.error('Error generating questions with AI:', error)
+    console.error('❌ Error generating questions with AI:', error)
+    console.log('🔄 Falling back to static questions')
     return getFallbackQuestions(category)
   }
 }
@@ -137,6 +151,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showLoginPopup, setShowLoginPopup] = useState(false)
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+  const [isAiGenerated, setIsAiGenerated] = useState(false)
 
   useEffect(() => {
     if (service) {
@@ -145,6 +160,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
         try {
           const questions = await generateDiagnosticQuestions(service.label, service.category)
           setDiagnosticQuestions(questions)
+          setIsAiGenerated(true)
           
           // Initialize service-specific answers
           const serviceSpecific: { [key: string]: string } = {}
@@ -157,6 +173,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
           // Fallback to static questions
           const fallbackQuestions = getFallbackQuestions(service.category)
           setDiagnosticQuestions(fallbackQuestions)
+          setIsAiGenerated(false)
           
           const serviceSpecific: { [key: string]: string } = {}
           fallbackQuestions.forEach((_, index) => {
@@ -374,9 +391,16 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
 
               {/* AI-Generated Diagnostic Questions */}
               <div className="border-t pt-6">
-                <h4 className="font-semibold mb-4 text-gray-900">
-                  Help us understand your requirements better
-                </h4>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-semibold text-gray-900">
+                    Help us understand your requirements better
+                  </h4>
+                  {isAiGenerated && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                      🤖 AI Generated
+                    </span>
+                  )}
+                </div>
                 <div className="space-y-4">
                   {isLoadingQuestions ? (
                     <div className="flex items-center justify-center py-8">
