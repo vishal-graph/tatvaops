@@ -171,6 +171,12 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
     }
   }, [service])
 
+  // Debug effect to track when diagnosticQuestions changes
+  useEffect(() => {
+    console.log('🎯 diagnosticQuestions changed:', diagnosticQuestions)
+    console.log('🎯 diagnosticQuestions length:', diagnosticQuestions.length)
+  }, [diagnosticQuestions])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -383,7 +389,7 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                     </span>
                   )}
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-4" key={`questions-${diagnosticQuestions.length}-${isAiGenerated}`}>
                   {isLoadingQuestions ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tatva-orange"></div>
@@ -392,6 +398,9 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                   ) : (
                     (() => {
                       console.log('🎯 Rendering questions:', diagnosticQuestions)
+                      console.log('🎯 Questions length:', diagnosticQuestions.length)
+                      console.log('🎯 First question:', diagnosticQuestions[0])
+                      console.log('🎯 isAiGenerated:', isAiGenerated)
                       return diagnosticQuestions.map((question, index) => (
                       <div key={index}>
                         <Label htmlFor={`question_${index}`}>
