@@ -30,21 +30,66 @@ interface EnquiryForm {
   }
 }
 
-// AI-generated diagnostic questions based on service type
-const getDiagnosticQuestions = (serviceLabel: string, category: string) => {
+// AI-generated diagnostic questions using Long Cat AI
+const generateDiagnosticQuestions = async (serviceLabel: string, category: string): Promise<string[]> => {
+  try {
+    const prompt = `Generate 5 specific diagnostic questions for a ${serviceLabel} service in the ${category} category. These questions should help gather initial information for a home service provider to understand the customer's needs. Make each question specific, actionable, and relevant to the service type. Return only the questions, one per line, without numbering.`
+    
+    const response = await fetch('https://api.longcat.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ak_1N40y00IF1aB0uI01H7Ab71U9a59W'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const questionsText = data.choices[0]?.message?.content || ''
+    
+    // Split by newlines and clean up
+    const questions = questionsText
+      .split('\n')
+      .map(q => q.trim())
+      .filter(q => q.length > 0)
+      .slice(0, 5) // Ensure we only get 5 questions
+    
+    return questions.length > 0 ? questions : getFallbackQuestions(category)
+  } catch (error) {
+    console.error('Error generating questions with AI:', error)
+    return getFallbackQuestions(category)
+  }
+}
+
+// Fallback questions if AI fails
+const getFallbackQuestions = (category: string) => {
   const baseQuestions = {
     "Interior Design & Renovation": [
-      "What is the size of the space you want to renovate? (e.g., 2BHK, 3BHK, specific room dimensions)",
-      "What is your preferred design style? (Modern, Traditional, Contemporary, Minimalist, etc.)",
+      "What is the size of the space you want to renovate?",
+      "What is your preferred design style?",
       "What is your budget range for this project?",
       "Do you have any specific requirements or must-have features?",
       "When would you like to start the project?"
     ],
     "Painting & Wall Treatment": [
-      "What type of surface needs painting? (Interior walls, exterior walls, ceiling, furniture)",
-      "What is the approximate area to be painted? (in square feet)",
-      "Do you have a preferred color scheme or specific colors in mind?",
-      "Are there any special requirements? (waterproofing, anti-fungal, texture finish)",
+      "What type of surface needs painting?",
+      "What is the approximate area to be painted?",
+      "Do you have a preferred color scheme?",
+      "Are there any special requirements?",
       "What is your preferred timeline for completion?"
     ],
     "Plumbing & Water Solutions": [
@@ -55,14 +100,14 @@ const getDiagnosticQuestions = (serviceLabel: string, category: string) => {
       "When would you like the service to be scheduled?"
     ],
     "Electrical & Lighting": [
-      "What type of electrical work do you need? (Installation, repair, maintenance)",
+      "What type of electrical work do you need?",
       "Is this for a new construction or existing property?",
       "What is the scope of electrical work required?",
-      "Do you have any specific electrical requirements or preferences?",
+      "Do you have any specific electrical requirements?",
       "What is your preferred timeline for the work?"
     ],
     "Furniture & Setup": [
-      "What type of furniture do you need help with? (Assembly, moving, repair, custom design)",
+      "What type of furniture do you need help with?",
       "What is the quantity and approximate size of items?",
       "Do you have the furniture already or need assistance with selection?",
       "What is your preferred timeline for completion?",
@@ -91,18 +136,39 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
   const [diagnosticQuestions, setDiagnosticQuestions] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showLoginPopup, setShowLoginPopup] = useState(false)
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
 
   useEffect(() => {
     if (service) {
-      const questions = getDiagnosticQuestions(service.label, service.category)
-      setDiagnosticQuestions(questions)
+      const loadQuestions = async () => {
+        setIsLoadingQuestions(true)
+        try {
+          const questions = await generateDiagnosticQuestions(service.label, service.category)
+          setDiagnosticQuestions(questions)
+          
+          // Initialize service-specific answers
+          const serviceSpecific: { [key: string]: string } = {}
+          questions.forEach((_, index) => {
+            serviceSpecific[`question_${index}`] = ""
+          })
+          setFormData(prev => ({ ...prev, serviceSpecific }))
+        } catch (error) {
+          console.error('Error loading questions:', error)
+          // Fallback to static questions
+          const fallbackQuestions = getFallbackQuestions(service.category)
+          setDiagnosticQuestions(fallbackQuestions)
+          
+          const serviceSpecific: { [key: string]: string } = {}
+          fallbackQuestions.forEach((_, index) => {
+            serviceSpecific[`question_${index}`] = ""
+          })
+          setFormData(prev => ({ ...prev, serviceSpecific }))
+        } finally {
+          setIsLoadingQuestions(false)
+        }
+      }
       
-      // Initialize service-specific answers
-      const serviceSpecific: { [key: string]: string } = {}
-      questions.forEach((_, index) => {
-        serviceSpecific[`question_${index}`] = ""
-      })
-      setFormData(prev => ({ ...prev, serviceSpecific }))
+      loadQuestions()
     }
   }, [service])
 
@@ -312,12 +378,18 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                   Help us understand your requirements better
                 </h4>
                 <div className="space-y-4">
-                  {diagnosticQuestions.map((question, index) => (
-                    <div key={index}>
-                      <Label htmlFor={`question_${index}`}>
-                        {question} *
-                      </Label>
-                      <Textarea
+                  {isLoadingQuestions ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tatva-orange"></div>
+                      <span className="ml-3 text-gray-600">Generating personalized questions...</span>
+                    </div>
+                  ) : (
+                    diagnosticQuestions.map((question, index) => (
+                      <div key={index}>
+                        <Label htmlFor={`question_${index}`}>
+                          {question} *
+                        </Label>
+                        <Textarea
                         id={`question_${index}`}
                         value={formData.serviceSpecific[`question_${index}`] || ""}
                         onChange={(e) => handleServiceSpecificChange(index, e.target.value)}
@@ -326,7 +398,8 @@ export function ServicePopup({ service, isOpen, onClose }: ServicePopupProps) {
                         placeholder="Please provide details..."
                       />
                     </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 
