@@ -47,8 +47,9 @@ export function Sidebar(){
                   <Icon className="h-5 w-5" />
                 </Link>
                 {hoveredItem === href && (
-                  <div className="absolute left-16 top-0 bg-white px-3 py-3 rounded-r-md shadow-lg border border-gray-200 z-50">
-                    <span className="text-sm whitespace-nowrap">{label}</span>
+                  <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-md shadow-lg z-50 whitespace-nowrap">
+                    <span className="text-sm font-medium">{label}</span>
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-800 rotate-45"></div>
                   </div>
                 )}
               </div>
@@ -67,8 +68,9 @@ export function Sidebar(){
                   <Icon className="h-5 w-5" />
                 </Link>
                 {hoveredItem === href && (
-                  <div className="absolute left-16 top-0 bg-white px-3 py-3 rounded-r-md shadow-lg border border-gray-200 z-50">
-                    <span className="text-sm whitespace-nowrap">{label}</span>
+                  <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-md shadow-lg z-50 whitespace-nowrap">
+                    <span className="text-sm font-medium">{label}</span>
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-800 rotate-45"></div>
                   </div>
                 )}
             </div>
