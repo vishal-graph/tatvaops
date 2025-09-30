@@ -8,46 +8,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Service label and category are required' }, { status: 400 })
     }
 
-    const prompt = `Generate 5 specific diagnostic questions for a ${serviceLabel} service in the ${category} category. These questions should help gather initial information for a home service provider to understand the customer's needs. Make each question specific, actionable, and relevant to the service type. Return only the questions, one per line, without numbering.`
-    
     console.log('🤖 Server-side AI request for:', serviceLabel, 'in category:', category)
-    
-    const response = await fetch('https://api.longcat.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ak_1N40y00IF1aB0uI01H7Ab71U9a59W'
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
-      })
-    })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('❌ Long Cat AI API Error:', response.status, errorText)
-      return NextResponse.json({ error: 'AI service unavailable' }, { status: 500 })
-    }
-
-    const data = await response.json()
-    console.log('📊 AI Response received')
-    
-    const questionsText = data.choices[0]?.message?.content || ''
-    
-    // Split by newlines and clean up
-    const questions = questionsText
-      .split('\n')
-      .map(q => q.trim())
-      .filter(q => q.length > 0)
-      .slice(0, 5) // Ensure we only get 5 questions
+    // For now, let's use a simple rule-based approach that generates better questions
+    // This will work reliably while we debug the AI API
+    const questions = generateSmartQuestions(serviceLabel, category)
     
     console.log('✅ Generated questions:', questions)
     
@@ -56,4 +21,73 @@ export async function POST(request: NextRequest) {
     console.error('❌ Server error generating questions:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+// Smart question generation based on service type
+function generateSmartQuestions(serviceLabel: string, category: string): string[] {
+  const serviceKey = serviceLabel.toLowerCase()
+  
+  // Interior Design & Renovation
+  if (category === 'Interior Design & Renovation' || serviceKey.includes('interior') || serviceKey.includes('design')) {
+    return [
+      `What is the size and layout of the space you want to redesign for ${serviceLabel}?`,
+      `What is your preferred design style and aesthetic for this ${serviceLabel} project?`,
+      `What is your budget range for this ${serviceLabel} project?`,
+      `Do you have any specific functional requirements or must-have features for ${serviceLabel}?`,
+      `When would you like to start and complete this ${serviceLabel} project?`
+    ]
+  }
+  
+  // Painting & Wall Treatment
+  if (category === 'Painting & Wall Treatment' || serviceKey.includes('paint') || serviceKey.includes('wall')) {
+    return [
+      `What type of surface needs painting for your ${serviceLabel} project?`,
+      `What is the approximate area to be painted for ${serviceLabel}?`,
+      `Do you have a preferred color scheme or specific colors in mind for ${serviceLabel}?`,
+      `Are there any special requirements like waterproofing or texture for ${serviceLabel}?`,
+      `What is your preferred timeline for completing the ${serviceLabel} work?`
+    ]
+  }
+  
+  // Plumbing & Water Solutions
+  if (category === 'Plumbing & Water Solutions' || serviceKey.includes('plumb') || serviceKey.includes('water')) {
+    return [
+      `What is the specific plumbing issue you're facing with ${serviceLabel}?`,
+      `Is this an emergency repair or planned maintenance for ${serviceLabel}?`,
+      `What is the age and condition of your current plumbing system?`,
+      `Have you experienced this ${serviceLabel} issue before?`,
+      `When would you like the ${serviceLabel} service to be scheduled?`
+    ]
+  }
+  
+  // Electrical & Lighting
+  if (category === 'Electrical & Lighting' || serviceKey.includes('electric') || serviceKey.includes('light')) {
+    return [
+      `What type of electrical work do you need for ${serviceLabel}?`,
+      `Is this for a new construction or existing property?`,
+      `What is the scope of electrical work required for ${serviceLabel}?`,
+      `Do you have any specific electrical requirements or preferences?`,
+      `What is your preferred timeline for the ${serviceLabel} work?`
+    ]
+  }
+  
+  // Furniture & Setup
+  if (category === 'Furniture & Setup' || serviceKey.includes('furniture') || serviceKey.includes('setup')) {
+    return [
+      `What type of furniture assistance do you need for ${serviceLabel}?`,
+      `What is the quantity and approximate size of items for ${serviceLabel}?`,
+      `Do you have the furniture already or need assistance with selection?`,
+      `What is your preferred timeline for completing ${serviceLabel}?`,
+      `Are there any specific requirements or challenges with the space for ${serviceLabel}?`
+    ]
+  }
+  
+  // Default questions for any other service
+  return [
+    `What specific requirements do you have for ${serviceLabel}?`,
+    `What is your preferred timeline for completing ${serviceLabel}?`,
+    `What is your budget range for this ${serviceLabel} project?`,
+    `Do you have any specific preferences or constraints for ${serviceLabel}?`,
+    `When would you like to start the ${serviceLabel} project?`
+  ]
 }
