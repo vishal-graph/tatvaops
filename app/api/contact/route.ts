@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { supabaseServer } from "@/lib/supabase"
+import { getSupabaseServer } from "@/lib/supabase"
 
 const ContactSchema = z.object({
   name: z.string().min(1).max(120),
@@ -29,7 +29,8 @@ export async function POST(req: Request) {
       created_at: new Date().toISOString(),
     }
 
-    const { error } = await supabaseServer.from("contact_submissions").insert(payload)
+    const supabase = getSupabaseServer()
+    const { error } = await supabase.from("contact_submissions").insert(payload)
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
