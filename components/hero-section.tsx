@@ -3,12 +3,10 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Search, CheckCircle, Shield, BarChart3 } from "lucide-react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { flatItems, expandQueryTokens, scoreItem } from "@/lib/search-utils"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 
 const serviceCategories = [
   "Interior Designing...",
@@ -20,11 +18,20 @@ const serviceCategories = [
   "Plumbing Services...",
 ]
 
+const searchOptions = [
+  "Interior Design",
+  "Construction",
+  "Painting",
+  "Home Automations",
+  "Electrical Service",
+  "Plumbing Services",
+]
+
 const backgroundImages = [
-  "/modern-kitchen-design.png",
-  "/luxury-living-room-marble.png",
-  "/modern-bedroom-design.png",
-  "/modern-bathroom-design.png",
+  "/freepik__the-style-is-candid-image-photography-with-natural__27320-1024x512.webp",
+  "/living-room-interior.jpg",
+  "/nalukettu-_1728994135329.jpg",
+  "/Step into a Kerala home built around a beautiful traditional courtyard.webp",
 ]
 
 export function HeroSection() {
@@ -32,8 +39,7 @@ export function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [suggestions, setSuggestions] = useState<string[]>([])
-  const router = useRouter()
+  const [showOptions, setShowOptions] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
@@ -51,23 +57,9 @@ export function HeroSection() {
     }
   }, [])
 
-  useEffect(() => {
-    const q = searchQuery.trim()
-    if (q.length < 3) { setSuggestions([]); return }
-    const qTokens = expandQueryTokens(q)
-    const matches = flatItems.map(item => ({ ...item, score: scoreItem(item as any, qTokens) }))
-      .filter(m => m.score > 0)
-      .sort((a,b)=>b.score-a.score)
-      .slice(0,3)
-      .map(m => m.label)
-    setSuggestions(matches)
-  }, [searchQuery])
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-    }
+    // Search functionality disabled
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -95,14 +87,14 @@ export function HeroSection() {
 
       <div className="relative z-30 max-w-4xl mx-auto px-6 text-center">
         <h1
-          className={`text-5xl font-bold mb-6 leading-tight text-balance transition-all duration-1000 font-sans md:text-6xl text-accent ${isVisible ? "animate-fade-in-up opacity-100" : "opacity-0"}`}
+          className={`text-5xl font-bold mb-6 leading-tight text-balance transition-all duration-1000 font-sans md:text-6xl text-white ${isVisible ? "animate-fade-in-up opacity-100" : "opacity-0"}`}
           style={{ textShadow: "2px 2px 4px var(--color-tatva-text-shadow)" }}
         >
           We are Building the Future of <span className="text-chart-4">Trusted Home Projects</span>
         </h1>
 
         <p
-          className={`mb-12 max-w-3xl mx-auto leading-relaxed text-pretty transition-all duration-1000 font-sans text-center text-lg font-normal text-sidebar ${isVisible ? "animate-fade-in-up opacity-100" : "opacity-0"} animate-delay-200`}
+          className={`mb-12 max-w-3xl mx-auto leading-relaxed text-pretty transition-all duration-1000 font-sans text-center text-lg font-normal text-white ${isVisible ? "animate-fade-in-up opacity-100" : "opacity-0"} animate-delay-200`}
           style={{ textShadow: "1px 1px 2px var(--color-tatva-text-shadow)" }}
         >
           {
@@ -125,6 +117,8 @@ export function HeroSection() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={() => setShowOptions(true)}
+              onBlur={() => setTimeout(() => setShowOptions(false), 200)}
               className="flex-1 pl-16 pr-4 py-6 text-lg border-0 bg-transparent placeholder:text-tatva-gray/70 focus:ring-0 focus:outline-none text-tatva-gray"
               placeholder={serviceCategories[currentPlaceholder]}
             />
@@ -138,12 +132,19 @@ export function HeroSection() {
             </Button>
           </form>
 
-          {suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-sm border border-tatva-light-gray rounded-2xl shadow-xl p-3">
-              <div className="flex gap-2">
-                {suggestions.slice(0,3).map((s)=> (
-                  <button key={s} onClick={()=>router.push(`/search?q=${encodeURIComponent(s)}`)} className="px-3 py-2 rounded-full border text-sm hover:bg-tatva-charcoal/10">
-                    {s}
+          {showOptions && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-sm border border-tatva-light-gray rounded-2xl shadow-xl p-4">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {searchOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSearchQuery(option)
+                      setShowOptions(false)
+                    }}
+                    className="px-4 py-2 rounded-full border border-tatva-light-gray text-sm font-medium hover:bg-tatva-orange hover:text-white hover:border-tatva-orange transition-all duration-200"
+                  >
+                    {option}
                   </button>
                 ))}
               </div>
